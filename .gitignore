@@ -1,0 +1,8 @@
+# Ignore certs and loyalty_pass.pass folders in backend
+/LoyaltyFunctionApp/certs/
+/LoyaltyFunctionApp/loyalty_pass.pass/
+
+
+# environment files
+.env
+*.log
