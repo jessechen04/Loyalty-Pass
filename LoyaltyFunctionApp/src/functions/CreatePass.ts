@@ -34,7 +34,7 @@ export async function CreatePass(request: HttpRequest, context: InvocationContex
 
         context.log("Pass object created");
 
-        pass.serialNumber = `user-${userId}-v3`);
+        pass.serialNumber = `user-${userId}-v3`;
         const barcode = {
             message: `${userId}`,
             format: 'PKBarcodeFormatQR',
@@ -56,7 +56,7 @@ export async function CreatePass(request: HttpRequest, context: InvocationContex
         //     description: pass.description
         // });
 
-        //const buffer = await pass.getAsBuffer();
+        const buffer = await pass.getAsBuffer();
 
         return { 
             status: 200,
