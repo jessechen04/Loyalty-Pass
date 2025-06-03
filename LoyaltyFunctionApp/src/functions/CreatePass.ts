@@ -19,9 +19,9 @@ export async function CreatePass(request: HttpRequest, context: InvocationContex
     try {
         // "as CreatePassRequestBody" to make sure it uses the interface
         // Basically this is a type assertion to ensure TypeScript knows the shape of the request body
-        const body = await request.json() as CreatePassRequestBody; // <-- THIS is your "req.body"
-        context.log("Parsed request body:", body);
-        const userId = body.userId ?? "123";
+        // const body = await request.json() as CreatePassRequestBody; // <-- THIS is your "req.body"
+        // context.log("Parsed request body:", body);
+        const userId = request.query.get('userId') ?? "123";
 
         const pass = await PKPass.from({
             model: path.join(__dirname, '..', '..', '..', 'loyalty_pass'),
@@ -58,6 +58,9 @@ export async function CreatePass(request: HttpRequest, context: InvocationContex
 
         const buffer = await pass.getAsBuffer();
 
+        //fs.writeFileSync(`user-${userId}.pkpass`, buffer);
+
+
         return { 
             status: 200,
             headers: {
@@ -78,7 +81,7 @@ export async function CreatePass(request: HttpRequest, context: InvocationContex
 };
 
 app.http('CreatePass', {
-    methods: ['POST'],
+    methods: ['GET'],
     authLevel: 'anonymous',
     handler: CreatePass
 });
