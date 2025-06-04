@@ -6,7 +6,7 @@ const { PKPass } = require('passkit-generator');
 //import { PKPass } from 'passkit-generator';
 
 interface CreatePassRequestBody {
-  userId?: string;
+  userCode?: string;
 }
 
 const cert = fs.readFileSync(path.join(__dirname, '..', '..', '..', 'certs', 'cert.pem'));
@@ -19,9 +19,10 @@ export async function CreatePass(request: HttpRequest, context: InvocationContex
     try {
         // "as CreatePassRequestBody" to make sure it uses the interface
         // Basically this is a type assertion to ensure TypeScript knows the shape of the request body
-        // const body = await request.json() as CreatePassRequestBody; // <-- THIS is your "req.body"
-        // context.log("Parsed request body:", body);
-        const userId = request.query.get('userId') ?? "123";
+        const body = await request.json() as CreatePassRequestBody; // <-- THIS is your "req.body"
+        context.log("Parsed request body:", body);
+        const userCode = body.userCode ?? "123"; // Default to "123" if not provided
+        // const userId = request.query.get('userId') ?? "123";
 
         const pass = await PKPass.from({
             model: path.join(__dirname, '..', '..', '..', 'loyalty_pass'),
@@ -34,17 +35,17 @@ export async function CreatePass(request: HttpRequest, context: InvocationContex
 
         context.log("Pass object created");
 
-        pass.serialNumber = `user-${userId}-v3`;
+        pass.serialNumber = `user-${userCode}-v3`;
         const barcode = {
-            message: `${userId}`,
+            message: `${userCode}`,
             format: 'PKBarcodeFormatQR',
             messageEncoding: 'iso-8859-1',
-            altText: `Loyalty #: ${userId}`,
+            altText: `Loyalty #: ${userCode}`,
         };
 
         pass.barcode = barcode;   // Backward compatibility
         pass.barcodes = [barcode]; // Modern iOS uses this
-        pass.description = `Wallet pass for user ${userId}`;
+        pass.description = `Wallet pass for user ${userCode}`;
 
         //context.log("Pass object created 2");
 
@@ -63,10 +64,10 @@ export async function CreatePass(request: HttpRequest, context: InvocationContex
 
         return { 
             status: 200,
-            headers: {
-                'Content-Type': 'application/vnd.apple.pkpass',
-                'Content-Disposition': `attachment; filename=user-${userId}.pkpass`
-            },
+            // headers: {
+            //     'Content-Type': 'application/vnd.apple.pkpass',
+            //     'Content-Disposition': `attachment; filename=user-${userCode}.pkpass`
+            // },
             body: buffer,
         };
 
@@ -81,7 +82,7 @@ export async function CreatePass(request: HttpRequest, context: InvocationContex
 };
 
 app.http('CreatePass', {
-    methods: ['GET'],
+    methods: ['POST'],
     authLevel: 'anonymous',
     handler: CreatePass
 });
